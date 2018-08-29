@@ -852,6 +852,9 @@ class EndUserApi(CRUDApi):
 
     def create(self, api_objects, **kwargs):
         raise ZenpyException("EndUsers cannot create!")
+    
+    def enumerate(self, api_objects, **kwargs):
+        raise ZenpyException("EndUsers cannot list!")
 
 
 class OrganizationApi(TaggableApi, IncrementalApi, CRUDExternalApi):
