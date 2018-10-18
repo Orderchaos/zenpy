@@ -376,6 +376,9 @@ class Api(BaseApi):
 
     def _get_sla(self, sla_id):
         return self._query_zendesk(EndpointFactory('sla_policies'), 'sla_policy', id=sla_id)
+    
+    def _get_schedule(self, schedule_id):
+        return self._query_zendesk(EndpointFactory('schedules'), 'schedule', id=schedule_id)
 
     def _get_department(self, department_id):
         return self._query_zendesk(EndpointFactory('chats').departments, 'department', id=department_id)
@@ -779,10 +782,26 @@ class UserApi(IncrementalApi, CRUDExternalApi, TaggableApi):
 
         :param user: User object or id
         """
-        url = self._build_url(self.endpoint.permanently_delete(id=user))
+        url = self._build_url(self.endpoint.deleted(id=user))
         deleted_user = self._delete(url)
         self.cache.delete(deleted_user)
         return deleted_user
+
+    def deleted(self):
+        """
+        List Deleted Users.
+
+        These are users that have been deleted but not permanently yet.
+        See Permanently delete user - https://developer.zendesk.com/rest_api/docs/core/users#permanently-delete-user
+        """
+        return self._get(self._build_url(self.endpoint.deleted()))
+
+    @extract_id(User)
+    def skips(self, user):
+        """
+        Skips for user (https://developer.zendesk.com/rest_api/docs/core/ticket_skips)
+        """
+        return self._get(self._build_url(self.endpoint.skips(id=user)))
 
 
 class AttachmentApi(Api):
@@ -852,9 +871,6 @@ class EndUserApi(CRUDApi):
 
     def create(self, api_objects, **kwargs):
         raise ZenpyException("EndUsers cannot create!")
-    
-    def enumerate(self, api_objects, **kwargs):
-        raise ZenpyException("EndUsers cannot list!")
 
 
 class OrganizationApi(TaggableApi, IncrementalApi, CRUDExternalApi):
@@ -1075,6 +1091,27 @@ class TicketApi(RateableApi, TaggableApi, IncrementalApi, CRUDApi):
         return TicketMergeRequest(self).post(target, source,
                                              target_comment=target_comment,
                                              source_comment=source_comment)
+
+    @extract_id(Ticket)
+    def skips(self, ticket):
+        """
+        Skips for ticket (https://developer.zendesk.com/rest_api/docs/core/ticket_skips)
+        """
+
+        return self._get(self._build_url(self.endpoint.skips(id=ticket)))
+
+
+class SkipApi(CRUDApi):
+    def __init__(self, config):
+        super(SkipApi, self).__init__(config,
+                                      object_type='skip',
+                                      endpoint=EndpointFactory('skips'))
+
+    def delete(self, api_objects, **kwargs):
+        raise NotImplementedError("Cannot delete Skip objects")
+
+    def update(self, api_objects, **kwargs):
+        raise NotImplementedError("Cannot update Skip objects")
 
 
 class TicketImportAPI(CRUDApi):
@@ -1421,6 +1458,9 @@ class SlaPolicyApi(CRUDApi):
         url = self._build_url(self.endpoint.definitions())
         return self._get(url)
 
+class ScheduleApi(CRUDApi):
+    def __init__(self, config):
+        super(ScheduleApi, self).__init__(config, object_type='schedule')
 
 class RecipientAddressApi(CRUDApi):
     def __init__(self, config):

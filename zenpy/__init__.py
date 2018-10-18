@@ -16,6 +16,7 @@ from zenpy.lib.api import (
     AttachmentApi,
     SharingAgreementAPI,
     SatisfactionRatingApi,
+    ScheduleApi,
     MacroApi,
     GroupApi,
     ViewApi,
@@ -32,7 +33,8 @@ from zenpy.lib.api import (
     BrandApi,
     TicketFormApi,
     OrganizationFieldsApi,
-    JiraLinkApi)
+    JiraLinkApi,
+    SkipApi)
 from zenpy.lib.cache import ZenpyCache, ZenpyCacheManager
 from zenpy.lib.endpoint import EndpointFactory
 from zenpy.lib.exception import ZenpyException
@@ -116,6 +118,7 @@ class Zenpy(object):
         self.tags = Api(config, object_type='tag')
         self.satisfaction_ratings = SatisfactionRatingApi(config)
         self.sharing_agreements = SharingAgreementAPI(config)
+        self.skips = SkipApi(config)
         self.activities = Api(config, object_type='activity')
         self.group_memberships = GroupMembershipApi(config)
         self.end_user = EndUserApi(config)
@@ -127,6 +130,7 @@ class Zenpy(object):
         self.chats = ChatApi(config, endpoint=EndpointFactory('chats'))
         self.views = ViewApi(config)
         self.sla_policies = SlaPolicyApi(config)
+        self.schedules = ScheduleApi(config)
         self.help_center = HelpCentreApi(config)
         self.recipient_addresses = RecipientAddressApi(config)
         self.nps = NpsApi(config)
